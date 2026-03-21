@@ -138,7 +138,7 @@ it('action does nothing for invalid icon',
         );
     });
 
-it('action inserts heroicon for valid icon',
+it('action inserts heroicon for valid icon with default alignment',
     /**
      * @throws ReflectionException
      */
@@ -163,20 +163,48 @@ it('action inserts heroicon for valid icon',
         );
     });
 
+it('action inserts heroicon with specified alignment',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(fn (array $commands, mixed $editorSelection): bool => count($commands) === 1
+                && $editorSelection === ['start' => 0, 'end' => 0]);
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap', 'align' => 'left'],
+            $component,
+        );
+    });
+
 it('tiptap extension has correct name', function (): void {
     expect(FilamentRichEditorHeroiconsTipTapExtension::$name)
         ->toBe('heroicon');
 });
 
-it('tiptap extension defines icon attribute', function (): void {
+it('tiptap extension defines icon and align attributes', function (): void {
     $extension = new FilamentRichEditorHeroiconsTipTapExtension;
     $attributes = $extension->addAttributes();
 
     expect($attributes)
         ->toBeArray()
         ->toHaveKey('icon')
+        ->toHaveKey('align')
         ->and($attributes['icon']['default'])
-        ->toBeNull();
+        ->toBeNull()
+        ->and($attributes['align']['default'])
+        ->toBe('inline');
 });
 
 it('tiptap extension renders empty span for invalid icon', function (): void {
@@ -206,7 +234,7 @@ it('tiptap extension renders empty span when icon is null', function (): void {
         ->toBe(['span', ['class' => 'inline-block'], '']);
 });
 
-it('tiptap extension renders svg for valid icon', function (): void {
+it('tiptap extension renders svg for valid icon with inline alignment by default', function (): void {
     $extension = new FilamentRichEditorHeroiconsTipTapExtension;
 
     $node = new stdClass;
@@ -220,7 +248,54 @@ it('tiptap extension renders svg for valid icon', function (): void {
         ->toHaveKey('content')
         ->and($result['content'])
         ->toBeString()
-        ->toContain('svg');
+        ->toContain('svg')
+        ->not->toContain('float')
+        ->not->toContain('display:block');
+});
+
+it('tiptap extension renders with left alignment', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->align = 'left';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('float:left')
+        ->toContain('margin-right:0.5rem');
+});
+
+it('tiptap extension renders with right alignment', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->align = 'right';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('float:right')
+        ->toContain('margin-left:0.5rem');
+});
+
+it('tiptap extension renders with center alignment', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->align = 'center';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('display:flex')
+        ->toContain('justify-content:center');
 });
 
 it('loads translations', function (): void {
@@ -231,5 +306,9 @@ it('loads translations', function (): void {
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.label'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.label')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.below_content', ['link-heroicon' => 'test']))
-        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.below_content');
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.below_content')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline');
 });

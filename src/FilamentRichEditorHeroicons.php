@@ -10,6 +10,7 @@ use Filament\Forms\Components\RichEditor\EditorCommand;
 use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Forms\Components\RichEditor\RichEditorTool;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
@@ -54,7 +55,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
             RichEditorTool::make('addHeroicon')
                 ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
                 ->action(
-                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.[\'data-icon\'] }',
+                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.[\'data-icon\'], align: $getEditor().getAttributes(\'heroicon\')?.[\'data-align\'] }',
                 )
                 ->icon(Heroicon::OutlinedFaceSmile),
         ];
@@ -71,6 +72,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                 ->modalWidth(Width::Large)
                 ->fillForm(fn (array $arguments): array => [
                     'icon' => $arguments['icon'] ?? null,
+                    'align' => $arguments['align'] ?? 'left',
                 ])
                 ->schema([
                     Select::make('icon')
@@ -82,6 +84,23 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                         ->required()
                         ->native(false)
                         ->belowContent(new HtmlString(__('filament-rich-editor-heroicons::rich-editor-heroicons.below_content', ['link-heroicon' => '<a href="https://heroicons.com/" class="underline" target="_blank" rel="noopener noreferrer">Heroicon</a>']))),
+                    ToggleButtons::make('align')
+                        ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label'))
+                        ->options([
+                            'left' => __('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_left'),
+                            'center' => __('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_center'),
+                            'right' => __('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_right'),
+                            'inline' => __('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline'),
+                        ])
+                        ->icons([
+                            'left' => Heroicon::OutlinedBars3BottomLeft,
+                            'center' => Heroicon::OutlinedBars3,
+                            'right' => Heroicon::OutlinedBars3BottomRight,
+                            'inline' => Heroicon::OutlinedBars2,
+                        ])
+                        ->default('left')
+                        ->inline()
+                        ->grouped(),
                 ])
                 ->action(function (array $arguments, array $data, RichEditor $component): void {
                     $iconName = $data['icon'];
@@ -103,6 +122,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                                         'attrs' => [
                                             'icon' => $iconName,
                                             'svg' => $svg,
+                                            'align' => $data['align'] ?? 'left',
                                         ],
                                     ],
                                 ],

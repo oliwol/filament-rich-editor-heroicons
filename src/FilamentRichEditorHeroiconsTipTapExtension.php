@@ -13,10 +13,21 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
 {
     public static $name = 'heroicon';
 
+    public static function alignmentStyle(string $align): string
+    {
+        return match ($align) {
+            'left' => 'display:inline-block;float:left;margin-right:0.5rem;',
+            'right' => 'display:inline-block;float:right;margin-left:0.5rem;',
+            'center' => 'display:flex;justify-content:center;',
+            default => '',
+        };
+    }
+
     public function addAttributes(): array
     {
         return [
             'icon' => ['default' => null],
+            'align' => ['default' => 'inline'],
         ];
     }
 
@@ -28,8 +39,16 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
             return ['span', ['class' => 'inline-block'], ''];
         }
 
+        $align = $node->attrs->align ?? 'inline';
+
         $svg = Blade::render('<x-filament::icon icon="'.$icon->getIconForSize(IconSize::Medium).'" class="inline-block size-6 align-middle" />');
 
-        return ['content' => htmlspecialchars($svg)];
+        $alignmentStyle = self::alignmentStyle($align);
+
+        if ($alignmentStyle !== '') {
+            $svg = '<span style="'.$alignmentStyle.'">'.$svg.'</span>';
+        }
+
+        return ['content' => $svg];
     }
 }
