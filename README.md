@@ -4,7 +4,11 @@
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/oliwol/filament-rich-editor-heroicons/tests.yml?label=tests&style=flat-square)](https://github.com/oliwol/filament-rich-editor-heroicons/actions)
 [![License](https://img.shields.io/packagist/l/oliwol/filament-rich-editor-heroicons.svg?style=flat-square)](https://github.com/oliwol/filament-rich-editor-heroicons/blob/0.x/LICENSE.md)
 
-A Filament v4/v5 plugin that adds a Heroicon picker to the RichEditor (TipTap). Search and insert any outline Heroicon as an inline SVG directly into the editor content.
+A Filament v4/v5 plugin that adds a Heroicon picker to the RichEditor (TipTap). 
+
+![Demo](art/demo.gif)
+
+Search and insert any outline Heroicon as an inline SVG directly into the editor content.
 
 ---
 
