@@ -36,7 +36,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Oliwol\\FilamentRichEditorHeroicons\\Tests\\": "tests/"
+            "Oliwol\\FilamentRichEditorHeroicons\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "scripts": {
@@ -54,6 +56,15 @@
             "@test:types",
             "@test:arch",
             "@test:unit"
+        ],
+        "serve": [
+            "@build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "build": [
+            "@php vendor/bin/testbench workbench:build --ansi",
+            "@php vendor/bin/testbench filament:assets --ansi",
+            "@php vendor/bin/testbench db:seed --class=\"Workbench\\Database\\Seeders\\DatabaseSeeder\" --ansi"
         ]
     },
     "config": {
