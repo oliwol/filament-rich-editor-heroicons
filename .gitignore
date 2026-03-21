@@ -13,3 +13,4 @@ composer.phar
 package-lock.json
 phpstan.neon
 phpunit.xml
+CLAUDE.md
