@@ -65,24 +65,55 @@ it('returns editor actions with addHeroicon', function (): void {
         ->toBe('addHeroicon');
 });
 
-it('only includes outline heroicons in options', function (): void {
-    $options = collect(Filament\Support\Icons\Heroicon::cases())
-        ->filter(fn (Filament\Support\Icons\Heroicon $icon): bool => str_starts_with($icon->value, 'o-'))
-        ->mapWithKeys(function (Filament\Support\Icons\Heroicon $icon): array {
-            $slug = str_replace('o-', '', $icon->value);
+it('only includes outline heroicons in search results', function (): void {
+    $results = FilamentRichEditorHeroicons::make()->searchIcons('ac');
 
-            return [$slug => $slug];
-        })
-        ->toArray();
-
-    expect($options)
+    expect($results)
         ->toBeArray()
         ->not->toBeEmpty()
-        ->and(array_keys($options))->each(
+        ->and(array_keys($results))->each(
             fn ($key) => $key->not->toStartWith('o-')
                 ->and($key)->not->toStartWith('s-')
                 ->and($key)->not->toStartWith('m-')
         );
+});
+
+it('search results contain svg and icon name', function (): void {
+    $results = FilamentRichEditorHeroicons::make()->searchIcons('academic-cap');
+
+    expect($results)
+        ->toHaveKey('academic-cap')
+        ->and($results['academic-cap'])
+        ->toContain('svg')
+        ->toContain('academic-cap')
+        ->toContain('style="display:flex;align-items:center;gap:0.5rem"');
+});
+
+it('search results are limited to 50 items', function (): void {
+    $results = FilamentRichEditorHeroicons::make()->searchIcons('a');
+
+    expect(count($results))->toBeLessThanOrEqual(50);
+});
+
+it('search results are empty for non-matching query', function (): void {
+    $results = FilamentRichEditorHeroicons::make()->searchIcons('zzzznonexistent');
+
+    expect($results)->toBeEmpty();
+});
+
+it('renders option label with svg for valid icon', function (): void {
+    $label = FilamentRichEditorHeroicons::make()->renderOptionLabel('academic-cap');
+
+    expect($label)
+        ->toContain('svg')
+        ->toContain('academic-cap')
+        ->toContain('style="display:flex;align-items:center;gap:0.5rem"');
+});
+
+it('renders option label as plain text for invalid icon', function (): void {
+    $label = FilamentRichEditorHeroicons::make()->renderOptionLabel('nonexistent-icon');
+
+    expect($label)->toBe('nonexistent-icon');
 });
 
 it('action does nothing for invalid icon',

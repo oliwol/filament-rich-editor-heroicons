@@ -74,16 +74,9 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                 ])
                 ->schema([
                     Select::make('icon')
-                        ->options(
-                            collect(Heroicon::cases())
-                                ->filter(fn (Heroicon $icon): bool => str_starts_with($icon->value, 'o-'))
-                                ->mapWithKeys(function (Heroicon $icon): array {
-                                    $slug = str_replace('o-', '', $icon->value);
-
-                                    return [$slug => $slug];
-                                })
-                                ->toArray()
-                        )
+                        ->getSearchResultsUsing(fn (string $search): array => $this->searchIcons($search))
+                        ->getOptionLabelUsing(fn (string $value): string => $this->renderOptionLabel($value))
+                        ->allowHtml()
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.label'))
                         ->searchable()
                         ->required()
@@ -119,5 +112,45 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     );
                 }),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function searchIcons(string $search): array
+    {
+        return collect(Heroicon::cases())
+            ->filter(fn (Heroicon $icon): bool => str_starts_with($icon->value, 'o-'))
+            ->filter(fn (Heroicon $icon): bool => str_contains(
+                str_replace('o-', '', $icon->value),
+                mb_strtolower($search),
+            ))
+            ->take(50)
+            ->mapWithKeys(function (Heroicon $icon): array {
+                $slug = str_replace('o-', '', $icon->value);
+
+                return [$slug => $this->renderIconLabel($slug, $icon)];
+            })
+            ->toArray();
+    }
+
+    public function renderOptionLabel(string $value): string
+    {
+        $icon = Heroicon::tryFrom('o-'.$value);
+
+        if (! $icon) {
+            return $value;
+        }
+
+        return $this->renderIconLabel($value, $icon);
+    }
+
+    private function renderIconLabel(string $slug, Heroicon $icon): string
+    {
+        $svg = Blade::render('<x-filament::icon :icon="$icon" style="width:1.25rem;height:1.25rem;display:inline-block;vertical-align:middle;flex-shrink:0" />', [
+            'icon' => $icon->getIconForSize(IconSize::Small),
+        ]);
+
+        return '<span style="display:flex;align-items:center;gap:0.5rem">'.$svg.'<span>'.$slug.'</span></span>';
     }
 }
