@@ -76,11 +76,33 @@ RichContentRenderer::make($this->html)
     ])
 ```
 
+### Alignment & Size
+
+The picker modal lets users choose alignment and size for each icon. You can customize the available sizes and default size via the plugin API:
+
+```php
+FilamentRichEditorHeroicons::make()
+    ->defaultSize('lg')
+    ->sizes([
+        'sm' => 16,
+        'md' => 24,
+        'lg' => 32,
+        'xl' => 48,
+    ])
+```
+
+**Alignment options:** Inline (default), Left, Center, Right
+
+**Size presets:** S (16px), M (24px, default), L (32px), XL (48px)
+
+Both settings are persisted in the editor content and applied consistently when rendering via `RichContentRenderer`.
+
 ## ⚙️ How it works
 
-1. Clicking the toolbar button opens a modal with a searchable dropdown of all outline [Heroicons](https://heroicons.com/).
-2. After selecting an icon, it is rendered as an inline SVG element and inserted into the editor content.
-3. The icon name is stored as a ```data-icon``` attribute, and the rendered SVG is stored as ```data-svg``` for display.
+1. Clicking the toolbar button opens a modal with a searchable dropdown of all outline [Heroicons](https://heroicons.com/) with SVG previews.
+2. After selecting an icon, choose an alignment and size.
+3. The icon is rendered as an inline SVG element and inserted into the editor content.
+4. The icon name, alignment, and size are stored as `data-icon`, `data-align`, and `data-size` attributes.
 
 ## 🌍 Translations
 
@@ -110,6 +132,10 @@ php artisan vendor:publish --tag="filament-rich-editor-heroicons-translations"
 ```bash
 composer test
 ```
+
+## 📝 Changelog
+
+Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 ## 📄 License
 
