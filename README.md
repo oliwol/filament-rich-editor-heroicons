@@ -84,7 +84,22 @@ RichContentRenderer::make($this->html)
 
 ## 🌍 Translations
 
-The package ships with English and German translations. You can publish and customize them:
+The package ships with translations for the following languages:
+
+| Language | Code |
+|---|---|
+| English | `en` |
+| German | `de` |
+| French | `fr` |
+| Spanish | `es` |
+| Portuguese (Brazil) | `pt_BR` |
+| Dutch | `nl` |
+| Italian | `it` |
+| Turkish | `tr` |
+| Arabic | `ar` |
+| Chinese (Simplified) | `zh_CN` |
+
+You can publish and customize them:
 
 ```bash
 php artisan vendor:publish --tag="filament-rich-editor-heroicons-translations"
