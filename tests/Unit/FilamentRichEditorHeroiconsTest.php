@@ -188,6 +188,95 @@ it('action inserts heroicon with specified alignment',
         );
     });
 
+it('action inserts heroicon with size attribute in command attrs',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['size'] === 'lg'
+                    && $attrs['icon'] === 'academic-cap';
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap', 'size' => 'lg'],
+            $component,
+        );
+    });
+
+it('action renders svg with correct pixel size for selected size',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $svg = $commands[0]->arguments[0]['attrs']['svg'];
+
+                return str_contains($svg, 'width:48px')
+                    && str_contains($svg, 'height:48px');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap', 'size' => 'xl'],
+            $component,
+        );
+    });
+
+it('action uses default size when size is not provided',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+                $svg = $attrs['svg'];
+
+                return $attrs['size'] === 'md'
+                    && str_contains($svg, 'width:24px')
+                    && str_contains($svg, 'height:24px');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap'],
+            $component,
+        );
+    });
+
 it('tiptap extension has correct name', function (): void {
     expect(FilamentRichEditorHeroiconsTipTapExtension::$name)
         ->toBe('heroicon');
@@ -403,6 +492,28 @@ it('renders size label with fallback for unknown size', function (): void {
     expect($label)
         ->toContain('width:24px')
         ->toContain('height:24px');
+});
+
+it('renders size label with selected icon instead of fallback', function (): void {
+    $plugin = FilamentRichEditorHeroicons::make();
+
+    $label = $plugin->renderSizeLabel('md', 'academic-cap');
+
+    expect($label)
+        ->toContain('svg')
+        ->toContain('width:24px')
+        ->toContain('height:24px');
+});
+
+it('sizePixels returns correct pixels for each preset', function (): void {
+    expect(FilamentRichEditorHeroiconsTipTapExtension::sizePixels('sm'))->toBe(16)
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::sizePixels('md'))->toBe(24)
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::sizePixels('lg'))->toBe(32)
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::sizePixels('xl'))->toBe(48);
+});
+
+it('sizePixels falls back to 24 for unknown size', function (): void {
+    expect(FilamentRichEditorHeroiconsTipTapExtension::sizePixels('unknown'))->toBe(24);
 });
 
 it('plugin allows custom sizes', function (): void {
