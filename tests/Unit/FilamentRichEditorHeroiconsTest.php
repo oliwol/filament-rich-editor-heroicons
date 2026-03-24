@@ -193,7 +193,7 @@ it('tiptap extension has correct name', function (): void {
         ->toBe('heroicon');
 });
 
-it('tiptap extension defines icon and align attributes', function (): void {
+it('tiptap extension defines icon, align, and size attributes', function (): void {
     $extension = new FilamentRichEditorHeroiconsTipTapExtension;
     $attributes = $extension->addAttributes();
 
@@ -201,10 +201,13 @@ it('tiptap extension defines icon and align attributes', function (): void {
         ->toBeArray()
         ->toHaveKey('icon')
         ->toHaveKey('align')
+        ->toHaveKey('size')
         ->and($attributes['icon']['default'])
         ->toBeNull()
         ->and($attributes['align']['default'])
-        ->toBe('inline');
+        ->toBe('inline')
+        ->and($attributes['size']['default'])
+        ->toBe('md');
 });
 
 it('tiptap extension renders empty span for invalid icon', function (): void {
@@ -298,6 +301,121 @@ it('tiptap extension renders with center alignment', function (): void {
         ->toContain('justify-content:center');
 });
 
+it('tiptap extension renders with default size (md = 24px)', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('width:24px')
+        ->toContain('height:24px');
+});
+
+it('tiptap extension renders with small size', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->size = 'sm';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('width:16px')
+        ->toContain('height:16px');
+});
+
+it('tiptap extension renders with large size', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->size = 'lg';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('width:32px')
+        ->toContain('height:32px');
+});
+
+it('tiptap extension renders with xl size', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->size = 'xl';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('width:48px')
+        ->toContain('height:48px');
+});
+
+it('tiptap extension falls back to 24px for unknown size', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->size = 'unknown';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('width:24px')
+        ->toContain('height:24px');
+});
+
+it('plugin has default sizes', function (): void {
+    $plugin = FilamentRichEditorHeroicons::make();
+
+    expect($plugin->getSizes())
+        ->toBe(['sm' => 16, 'md' => 24, 'lg' => 32, 'xl' => 48])
+        ->and($plugin->getDefaultSize())
+        ->toBe('md');
+});
+
+it('renders size label with smiley icon at correct size', function (): void {
+    $plugin = FilamentRichEditorHeroicons::make();
+
+    $label = $plugin->renderSizeLabel('lg');
+
+    expect($label)
+        ->toContain('svg')
+        ->toContain('width:32px')
+        ->toContain('height:32px');
+});
+
+it('renders size label with fallback for unknown size', function (): void {
+    $plugin = FilamentRichEditorHeroicons::make();
+
+    $label = $plugin->renderSizeLabel('unknown');
+
+    expect($label)
+        ->toContain('width:24px')
+        ->toContain('height:24px');
+});
+
+it('plugin allows custom sizes', function (): void {
+    $plugin = FilamentRichEditorHeroicons::make()
+        ->sizes(['s' => 12, 'm' => 20, 'l' => 40])
+        ->defaultSize('m');
+
+    expect($plugin->getSizes())
+        ->toBe(['s' => 12, 'm' => 20, 'l' => 40])
+        ->and($plugin->getDefaultSize())
+        ->toBe('m');
+});
+
 it('loads translations', function (): void {
     expect(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.action_label')
@@ -310,5 +428,9 @@ it('loads translations', function (): void {
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline'))
-        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline');
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_inline')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.size_label'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.size_label')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.size_md', ['px' => 24]))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.size_md');
 });

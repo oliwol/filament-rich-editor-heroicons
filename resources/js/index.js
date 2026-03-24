@@ -1,7 +1,10 @@
 import {Node} from '@tiptap/core';
 
+const SIZE_MAP = { sm: 16, md: 24, lg: 32, xl: 48 };
+
 function applyAlignment(el, align) {
     el.style.display = 'inline-block';
+    el.style.verticalAlign = 'middle';
     el.style.float = '';
     el.style.marginLeft = '';
     el.style.marginRight = '';
@@ -20,6 +23,16 @@ function applyAlignment(el, align) {
             el.style.display = 'flex';
             el.style.justifyContent = 'center';
             break;
+    }
+}
+
+function applySize(el, size) {
+    const px = SIZE_MAP[size] || 24;
+    const svg = el.querySelector('svg');
+    if (svg) {
+        svg.style.width = px + 'px';
+        svg.style.height = px + 'px';
+        svg.style.verticalAlign = 'middle';
     }
 }
 
@@ -52,6 +65,13 @@ export default Node.create({
                     'data-align': attrs.align || 'inline',
                 }),
             },
+            size: {
+                default: 'md',
+                parseHTML: el => el.getAttribute('data-size') || 'md',
+                renderHTML: attrs => ({
+                    'data-size': attrs.size || 'md',
+                }),
+            },
         }
     },
 
@@ -69,6 +89,7 @@ export default Node.create({
             span.innerHTML = node.attrs.svg || '<span>[Icon SVG missing!]</span>';
 
             applyAlignment(span, node.attrs.align || 'inline');
+            applySize(span, node.attrs.size || 'md');
 
             return {
                 dom: span,
