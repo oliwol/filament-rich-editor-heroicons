@@ -17,7 +17,7 @@ final class TestRichEditor extends Page
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedPencilSquare;
 
-    protected static ?string $title = 'Rich Editor Test';
+    protected static ?string $title = 'Rich Editor Heroicons';
 
     public function content(Schema $schema): Schema
     {
