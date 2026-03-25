@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-25
+
 ### Added
 
 - Searchable icon picker with SVG previews in the dropdown (#26)
