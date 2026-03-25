@@ -595,6 +595,101 @@ it('plugin allows custom styles', function (): void {
         ->toBe(['solid']);
 });
 
+it('action inserts heroicon with color',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['color'] === '#ef4444'
+                    && str_contains((string) $attrs['svg'], 'color:#ef4444');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap', 'color' => '#ef4444'],
+            $component,
+        );
+    });
+
+it('action inserts heroicon with default color #000000 when no color specified',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['color'] === '#000000'
+                    && str_contains((string) $attrs['svg'], 'color:#000000');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap'],
+            $component,
+        );
+    });
+
+it('tiptap extension defines color attribute', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+    $attributes = $extension->addAttributes();
+
+    expect($attributes)
+        ->toHaveKey('color')
+        ->and($attributes['color']['default'])
+        ->toBe('#000000');
+});
+
+it('tiptap extension renders with color', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->color = '#ef4444';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('color:#ef4444');
+});
+
+it('tiptap extension renders with default color #000000', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('color:#000000');
+});
+
 it('tiptap extension renders solid icon', function (): void {
     $extension = new FilamentRichEditorHeroiconsTipTapExtension;
 
@@ -1032,5 +1127,7 @@ it('loads translations', function (): void {
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.style_solid'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.style_solid')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.style_mini'))
-        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.style_mini');
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.style_mini')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.color_label'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.color_label');
 });

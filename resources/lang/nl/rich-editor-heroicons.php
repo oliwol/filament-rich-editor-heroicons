@@ -23,4 +23,5 @@ return [
     'size_md' => 'M (:pxpx)',
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
+    'color_label' => 'Kleur',
 ];
