@@ -36,11 +36,27 @@ function applySize(el, size) {
     }
 }
 
+function findToolbarButton(editor, actionName) {
+    const editorEl = editor.view.dom;
+    const wrapper = editorEl.closest('[x-data]');
+    if (!wrapper) return null;
+
+    const buttons = wrapper.querySelectorAll('button.fi-fo-rich-editor-tool');
+    for (const btn of buttons) {
+        const clickAttr = btn.getAttribute('x-on:click') || btn.getAttribute('@click');
+        if (clickAttr && clickAttr.includes(actionName)) {
+            return btn;
+        }
+    }
+    return null;
+}
+
 export default Node.create({
     name: 'heroicon',
     group: 'inline',
     inline: true,
     atom: true,
+    selectable: true,
 
     addAttributes() {
         return {
@@ -91,12 +107,31 @@ export default Node.create({
     },
 
     addNodeView() {
-        return ({ node }) => {
+        return ({ editor, node, getPos }) => {
             const span = document.createElement('span');
             span.innerHTML = node.attrs.svg || '<span>[Icon SVG missing!]</span>';
 
             applyAlignment(span, node.attrs.align || 'inline');
             applySize(span, node.attrs.size || 'md');
+
+            if (editor.isEditable) {
+                span.style.cursor = 'pointer';
+
+                span.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const pos = getPos();
+                    if (typeof pos !== 'number') return;
+
+                    editor.commands.setNodeSelection(pos);
+
+                    setTimeout(() => {
+                        const btn = findToolbarButton(editor, 'addHeroicon');
+                        if (btn) btn.click();
+                    }, 0);
+                });
+            }
 
             return {
                 dom: span,

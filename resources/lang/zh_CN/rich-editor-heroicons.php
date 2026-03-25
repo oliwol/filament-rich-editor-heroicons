@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'action_label' => '添加 Heroicon',
     'heading' => '插入 Heroicon',
+    'heading_edit' => '编辑 Heroicon',
     'label' => '图标',
     'placeholder' => '选择图标',
     'below_content' => '输入您要插入的 :link-heroicon 标识符。',

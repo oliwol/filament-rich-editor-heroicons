@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'action_label' => 'إضافة Heroicon',
     'heading' => 'إدراج Heroicon',
+    'heading_edit' => 'تعديل Heroicon',
     'label' => 'أيقونة',
     'placeholder' => 'اختر أيقونة',
     'below_content' => 'أدخل معرّف :link-heroicon الذي تريد إدراجه.',

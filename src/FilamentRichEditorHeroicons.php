@@ -135,7 +135,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
             RichEditorTool::make('addHeroicon')
                 ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
                 ->action(
-                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.[\'data-icon\'], align: $getEditor().getAttributes(\'heroicon\')?.[\'data-align\'], size: $getEditor().getAttributes(\'heroicon\')?.[\'data-size\'], style: $getEditor().getAttributes(\'heroicon\')?.[\'data-style\'] }',
+                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.icon, align: $getEditor().getAttributes(\'heroicon\')?.align, size: $getEditor().getAttributes(\'heroicon\')?.size, style: $getEditor().getAttributes(\'heroicon\')?.style }',
                 )
                 ->icon(Heroicon::OutlinedFaceSmile),
         ];
@@ -148,7 +148,9 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
     {
         return [
             Action::make('addHeroicon')
-                ->modalHeading(__('filament-rich-editor-heroicons::rich-editor-heroicons.heading'))
+                ->modalHeading(fn (array $arguments): string => filled($arguments['icon'] ?? null)
+                    ? __('filament-rich-editor-heroicons::rich-editor-heroicons.heading_edit')
+                    : __('filament-rich-editor-heroicons::rich-editor-heroicons.heading'))
                 ->modalWidth(Width::Large)
                 ->fillForm(fn (array $arguments): array => [
                     'style' => $arguments['style'] ?? $this->styles[0],

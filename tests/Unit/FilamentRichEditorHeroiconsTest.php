@@ -739,11 +739,114 @@ it('style toggle is shown when multiple styles configured', function (): void {
         ->and($childNames)->toContain('icon');
 });
 
+it('modal heading shows insert when no icon argument',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('modalHeading');
+        $closure = $property->getValue($action);
+
+        $result = $closure(['icon' => null]);
+
+        expect($result)->toBe('Insert Heroicon');
+    });
+
+it('modal heading shows edit when icon argument is present',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('modalHeading');
+        $closure = $property->getValue($action);
+
+        $result = $closure(['icon' => 'academic-cap']);
+
+        expect($result)->toBe('Edit Heroicon');
+    });
+
+it('modal heading shows insert when icon argument is empty string',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('modalHeading');
+        $closure = $property->getValue($action);
+
+        $result = $closure(['icon' => '']);
+
+        expect($result)->toBe('Insert Heroicon');
+    });
+
+it('modal heading shows insert when arguments have no icon key',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('modalHeading');
+        $closure = $property->getValue($action);
+
+        $result = $closure([]);
+
+        expect($result)->toBe('Insert Heroicon');
+    });
+
+it('action updates icon in place when editing existing icon',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands, mixed $editorSelection): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['icon'] === 'heart'
+                    && $attrs['align'] === 'right'
+                    && $attrs['size'] === 'lg'
+                    && $attrs['style'] === 'solid'
+                    && str_contains((string) $attrs['svg'], 'svg')
+                    && $editorSelection === ['start' => 5, 'end' => 6];
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 5, 'end' => 6], 'icon' => 'academic-cap'],
+            ['icon' => 'heart', 'align' => 'right', 'size' => 'lg', 'style' => 'solid'],
+            $component,
+        );
+    });
+
 it('loads translations', function (): void {
     expect(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.action_label')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.heading'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.heading')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.heading_edit'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.heading_edit')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.label'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.label')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.below_content', ['link-heroicon' => 'test']))

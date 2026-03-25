@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'action_label' => 'Heroicon hinzufügen',
     'heading' => 'Heroicon einfügen',
+    'heading_edit' => 'Heroicon bearbeiten',
     'label' => 'Slug',
     'placeholder' => 'Icon auswählen',
     'below_content' => 'Geben Sie den Slug des :link-heroicon an, das Sie einfügen möchten.',

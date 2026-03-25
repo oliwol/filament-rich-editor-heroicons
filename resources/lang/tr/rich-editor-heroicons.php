@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'action_label' => 'Heroicon Ekle',
     'heading' => 'Heroicon Ekle',
+    'heading_edit' => 'Heroicon Düzenle',
     'label' => 'Simge',
     'placeholder' => 'Bir simge seçin',
     'below_content' => 'Eklemek istediğiniz :link-heroicon slug\'ını girin.',
