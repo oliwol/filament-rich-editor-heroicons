@@ -182,7 +182,20 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                                     ->native(false)
                                     ->selectablePlaceholder(false)
                                     ->live()
-                                    ->afterStateUpdated(fn (callable $set) => $set('icon', null)),
+                                    ->afterStateUpdated(function (callable $set, callable $get): void {
+                                        $currentIcon = $get('icon');
+
+                                        if ($currentIcon === null) {
+                                            return;
+                                        }
+
+                                        $newStyle = $get('style');
+                                        $resolved = self::resolveHeroicon($currentIcon, $newStyle);
+
+                                        if (! $resolved instanceof Heroicon) {
+                                            $set('icon', null);
+                                        }
+                                    }),
                             ]
                             : []),
                     ])

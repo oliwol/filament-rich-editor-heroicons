@@ -739,6 +739,127 @@ it('style toggle is shown when multiple styles configured', function (): void {
         ->and($childNames)->toContain('icon');
 });
 
+it('style switch keeps icon when it exists in the new style',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $plugin = FilamentRichEditorHeroicons::make()->styles(['outline', 'solid']);
+        $actions = $plugin->getEditorActions();
+        $action = $actions[0];
+
+        $actionReflection = new ReflectionClass($action);
+        $schemaProp = $actionReflection->getProperty('schema');
+        $schema = $schemaProp->getValue($action);
+
+        $fusedGroup = collect($schema)->first(fn ($field): bool => $field instanceof Filament\Schemas\Components\FusedGroup);
+        $componentReflection = new ReflectionClass($fusedGroup);
+        $childProp = $componentReflection->getProperty('childComponents');
+        $children = $childProp->getValue($fusedGroup);
+        $styleSelect = collect($children['default'] ?? [])->first(fn ($child): bool => $child->getName() === 'style');
+
+        $selectReflection = new ReflectionClass($styleSelect);
+        $callbacksProp = $selectReflection->getProperty('afterStateUpdated');
+        $callbacks = $callbacksProp->getValue($styleSelect);
+        $closure = $callbacks[0];
+
+        $iconValue = 'academic-cap';
+        $set = function (string $key, mixed $value) use (&$iconValue): void {
+            if ($key === 'icon') {
+                $iconValue = $value;
+            }
+        };
+        $get = (fn (string $key): mixed => match ($key) {
+            'icon' => $iconValue,
+            'style' => 'solid',
+            default => null,
+        });
+
+        $closure($set, $get);
+
+        expect($iconValue)->toBe('academic-cap');
+    });
+
+it('style switch clears icon when it does not exist in the new style',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $plugin = FilamentRichEditorHeroicons::make()->styles(['outline', 'solid']);
+        $actions = $plugin->getEditorActions();
+        $action = $actions[0];
+
+        $actionReflection = new ReflectionClass($action);
+        $schemaProp = $actionReflection->getProperty('schema');
+        $schema = $schemaProp->getValue($action);
+
+        $fusedGroup = collect($schema)->first(fn ($field): bool => $field instanceof Filament\Schemas\Components\FusedGroup);
+        $componentReflection = new ReflectionClass($fusedGroup);
+        $childProp = $componentReflection->getProperty('childComponents');
+        $children = $childProp->getValue($fusedGroup);
+        $styleSelect = collect($children['default'] ?? [])->first(fn ($child): bool => $child->getName() === 'style');
+
+        $selectReflection = new ReflectionClass($styleSelect);
+        $callbacksProp = $selectReflection->getProperty('afterStateUpdated');
+        $callbacks = $callbacksProp->getValue($styleSelect);
+        $closure = $callbacks[0];
+
+        $iconValue = 'nonexistent-icon-xyz';
+        $set = function (string $key, mixed $value) use (&$iconValue): void {
+            if ($key === 'icon') {
+                $iconValue = $value;
+            }
+        };
+        $get = (fn (string $key): mixed => match ($key) {
+            'icon' => $iconValue,
+            'style' => 'solid',
+            default => null,
+        });
+
+        $closure($set, $get);
+
+        expect($iconValue)->toBeNull();
+    });
+
+it('style switch does nothing when no icon is selected',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $plugin = FilamentRichEditorHeroicons::make()->styles(['outline', 'solid']);
+        $actions = $plugin->getEditorActions();
+        $action = $actions[0];
+
+        $actionReflection = new ReflectionClass($action);
+        $schemaProp = $actionReflection->getProperty('schema');
+        $schema = $schemaProp->getValue($action);
+
+        $fusedGroup = collect($schema)->first(fn ($field): bool => $field instanceof Filament\Schemas\Components\FusedGroup);
+        $componentReflection = new ReflectionClass($fusedGroup);
+        $childProp = $componentReflection->getProperty('childComponents');
+        $children = $childProp->getValue($fusedGroup);
+        $styleSelect = collect($children['default'] ?? [])->first(fn ($child): bool => $child->getName() === 'style');
+
+        $selectReflection = new ReflectionClass($styleSelect);
+        $callbacksProp = $selectReflection->getProperty('afterStateUpdated');
+        $callbacks = $callbacksProp->getValue($styleSelect);
+        $closure = $callbacks[0];
+
+        $setCalled = false;
+        $set = function () use (&$setCalled): void {
+            $setCalled = true;
+        };
+        $get = (fn (string $key): mixed => match ($key) {
+            'icon' => null,
+            'style' => 'solid',
+            default => null,
+        });
+
+        $closure($set, $get);
+
+        expect($setCalled)->toBeFalse();
+    });
+
 it('modal heading shows insert when no icon argument',
     /**
      * @throws ReflectionException
