@@ -72,6 +72,13 @@ export default Node.create({
                     'data-size': attrs.size || 'md',
                 }),
             },
+            style: {
+                default: 'outline',
+                parseHTML: el => el.getAttribute('data-style') || 'outline',
+                renderHTML: attrs => ({
+                    'data-style': attrs.style || 'outline',
+                }),
+            },
         }
     },
 

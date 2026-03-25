@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Oliwol\FilamentRichEditorHeroicons;
 
-use Filament\Support\Enums\IconSize;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Blade;
 use Tiptap\Core\Node;
 
@@ -42,14 +40,16 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
             'icon' => ['default' => null],
             'align' => ['default' => 'inline'],
             'size' => ['default' => 'md'],
+            'style' => ['default' => 'outline'],
         ];
     }
 
     public function renderHTML($node): array
     {
-        $icon = Heroicon::tryFrom('o-'.($node->attrs->icon ?? ''));
+        $style = $node->attrs->style ?? 'outline';
+        $icon = FilamentRichEditorHeroicons::resolveHeroicon($node->attrs->icon ?? '', $style);
 
-        if (! $icon) {
+        if (! $icon instanceof \Filament\Support\Icons\Heroicon) {
             return ['span', ['class' => 'inline-block'], ''];
         }
 
@@ -57,7 +57,8 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
         $size = $node->attrs->size ?? 'md';
         $px = self::sizePixels($size);
 
-        $svg = Blade::render('<x-filament::icon icon="'.$icon->getIconForSize(IconSize::Medium).'" style="width:'.$px.'px;height:'.$px.'px;display:inline-block;vertical-align:middle" />');
+        $bladeIcon = FilamentRichEditorHeroicons::bladeIconName($icon, $style);
+        $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'" style="width:'.$px.'px;height:'.$px.'px;display:inline-block;vertical-align:middle" />');
 
         $alignmentStyle = self::alignmentStyle($align);
 

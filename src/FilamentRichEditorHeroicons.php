@@ -11,6 +11,7 @@ use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Forms\Components\RichEditor\RichEditorTool;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\FusedGroup;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
@@ -31,9 +32,30 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
 
     private string $defaultSize = 'md';
 
+    /** @var array<string> */
+    private array $styles = ['outline', 'solid'];
+
     public static function make(): self
     {
         return new self;
+    }
+
+    public static function resolveHeroicon(string $slug, string $style = 'outline'): ?Heroicon
+    {
+        if ($style === 'solid') {
+            return Heroicon::tryFrom($slug);
+        }
+
+        return Heroicon::tryFrom('o-'.$slug);
+    }
+
+    public static function bladeIconName(Heroicon $icon, string $style = 'outline'): string
+    {
+        if ($style === 'solid') {
+            return $icon->getIconForSize(IconSize::Large);
+        }
+
+        return $icon->getIconForSize(IconSize::Medium);
     }
 
     /**
@@ -54,6 +76,16 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
     }
 
     /**
+     * @param  array<string>  $styles
+     */
+    public function styles(array $styles): self
+    {
+        $this->styles = $styles;
+
+        return $this;
+    }
+
+    /**
      * @return array<string, int>
      */
     public function getSizes(): array
@@ -64,6 +96,14 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
     public function getDefaultSize(): string
     {
         return $this->defaultSize;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getStyles(): array
+    {
+        return $this->styles;
     }
 
     /**
@@ -95,7 +135,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
             RichEditorTool::make('addHeroicon')
                 ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
                 ->action(
-                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.[\'data-icon\'], align: $getEditor().getAttributes(\'heroicon\')?.[\'data-align\'], size: $getEditor().getAttributes(\'heroicon\')?.[\'data-size\'] }',
+                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.[\'data-icon\'], align: $getEditor().getAttributes(\'heroicon\')?.[\'data-align\'], size: $getEditor().getAttributes(\'heroicon\')?.[\'data-size\'], style: $getEditor().getAttributes(\'heroicon\')?.[\'data-style\'] }',
                 )
                 ->icon(Heroicon::OutlinedFaceSmile),
         ];
@@ -111,22 +151,42 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                 ->modalHeading(__('filament-rich-editor-heroicons::rich-editor-heroicons.heading'))
                 ->modalWidth(Width::Large)
                 ->fillForm(fn (array $arguments): array => [
+                    'style' => $arguments['style'] ?? $this->styles[0],
                     'icon' => $arguments['icon'] ?? null,
                     'align' => $arguments['align'] ?? 'inline',
                     'size' => $arguments['size'] ?? $this->defaultSize,
                 ])
                 ->schema([
-                    Select::make('icon')
-                        ->getSearchResultsUsing(fn (string $search): array => $this->searchIcons($search))
-                        ->getOptionLabelUsing(fn (string $value): string => $this->renderOptionLabel($value))
-                        ->allowHtml()
+                    FusedGroup::make([
+                        Select::make('icon')
+                            ->getSearchResultsUsing(fn (string $search, callable $get): array => $this->searchIcons($search, $get('style') ?? $this->styles[0]))
+                            ->getOptionLabelUsing(fn (string $value, callable $get): string => $this->renderOptionLabel($value, $get('style') ?? $this->styles[0]))
+                            ->allowHtml()
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->native(false)
+                            ->columnSpan(2)
+                            ->placeholder(__('filament-rich-editor-heroicons::rich-editor-heroicons.placeholder'))
+                            ->belowContent(new HtmlString(__('filament-rich-editor-heroicons::rich-editor-heroicons.below_content', ['link-heroicon' => '<a href="https://heroicons.com/" style="text-decoration:underline" target="_blank" rel="noopener noreferrer">Heroicon</a>']))),
+                        ...(count($this->styles) > 1
+                            ? [
+                                Select::make('style')
+                                    ->options(fn (): array => collect($this->styles)->mapWithKeys(fn (string $style): array => [
+                                        $style => $this->renderStyleLabel($style),
+                                    ])->toArray())
+                                    ->allowHtml()
+                                    ->default($this->styles[0])
+                                    ->native(false)
+                                    ->selectablePlaceholder(false)
+                                    ->live()
+                                    ->afterStateUpdated(fn (callable $set) => $set('icon', null)),
+                            ]
+                            : []),
+                    ])
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.label'))
-                        ->searchable()
-                        ->required()
-                        ->live()
-                        ->native(false)
-                        ->placeholder(__('filament-rich-editor-heroicons::rich-editor-heroicons.placeholder'))
-                        ->belowContent(new HtmlString(__('filament-rich-editor-heroicons::rich-editor-heroicons.below_content', ['link-heroicon' => '<a href="https://heroicons.com/" style="text-decoration:underline" target="_blank" rel="noopener noreferrer">Heroicon</a>']))),
+                        ->columns(count($this->styles) > 1 ? 3 : 1)
+                        ->columnSpanFull(),
                     ToggleButtons::make('align')
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.alignment_label'))
                         ->options([
@@ -147,7 +207,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     ToggleButtons::make('size')
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.size_label'))
                         ->options(fn (callable $get): array => collect($this->sizes)->mapWithKeys(fn (int $px, string $key): array => [
-                            $key => new HtmlString($this->renderSizeLabel($key, $get('icon'))),
+                            $key => new HtmlString($this->renderSizeLabel($key, $get('icon'), $get('style') ?? $this->styles[0])),
                         ])->toArray())
                         ->default($this->defaultSize)
                         ->inline()
@@ -155,16 +215,18 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                 ])
                 ->action(function (array $arguments, array $data, RichEditor $component): void {
                     $iconName = $data['icon'];
-                    $icon = Heroicon::tryFrom('o-'.($iconName ?? ''));
+                    $style = $data['style'] ?? $this->styles[0];
+                    $icon = self::resolveHeroicon($iconName ?? '', $style);
 
-                    if (! $icon) {
+                    if (! $icon instanceof Heroicon) {
                         return;
                     }
 
                     $size = $data['size'] ?? $this->defaultSize;
                     $px = $this->sizes[$size] ?? 24;
 
-                    $svg = Blade::render('<x-filament::icon icon="'.$icon->getIconForSize(IconSize::Medium).'" style="width:'.$px.'px;height:'.$px.'px;vertical-align:middle" />');
+                    $bladeIcon = self::bladeIconName($icon, $style);
+                    $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'" style="width:'.$px.'px;height:'.$px.'px;vertical-align:middle" />');
 
                     $component->runCommands(
                         commands: [
@@ -178,6 +240,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                                             'svg' => $svg,
                                             'align' => $data['align'] ?? 'inline',
                                             'size' => $size,
+                                            'style' => $style,
                                         ],
                                     ],
                                 ],
@@ -192,50 +255,70 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
     /**
      * @return array<string, string>
      */
-    public function searchIcons(string $search): array
+    public function searchIcons(string $search, string $style = 'outline'): array
     {
+        $isOutline = $style !== 'solid';
+
         return collect(Heroicon::cases())
-            ->filter(fn (Heroicon $icon): bool => str_starts_with($icon->value, 'o-'))
+            ->filter(fn (Heroicon $icon): bool => $isOutline
+                ? str_starts_with($icon->value, 'o-')
+                : ! str_starts_with($icon->value, 'o-'))
             ->filter(fn (Heroicon $icon): bool => str_contains(
-                str_replace('o-', '', $icon->value),
+                $isOutline ? str_replace('o-', '', $icon->value) : $icon->value,
                 mb_strtolower($search),
             ))
             ->take(50)
-            ->mapWithKeys(function (Heroicon $icon): array {
-                $slug = str_replace('o-', '', $icon->value);
+            ->mapWithKeys(function (Heroicon $icon) use ($isOutline, $style): array {
+                $slug = $isOutline ? str_replace('o-', '', $icon->value) : $icon->value;
 
-                return [$slug => $this->renderIconLabel($slug, $icon)];
+                return [$slug => $this->renderIconLabel($slug, $icon, $style)];
             })
             ->toArray();
     }
 
-    public function renderOptionLabel(string $value): string
+    public function renderOptionLabel(string $value, string $style = 'outline'): string
     {
-        $icon = Heroicon::tryFrom('o-'.$value);
+        $icon = self::resolveHeroicon($value, $style);
 
-        if (! $icon) {
+        if (! $icon instanceof Heroicon) {
             return $value;
         }
 
-        return $this->renderIconLabel($value, $icon);
+        return $this->renderIconLabel($value, $icon, $style);
     }
 
-    public function renderSizeLabel(string $value, ?string $iconSlug = null): string
+    public function renderStyleLabel(string $style): string
+    {
+        $fallback = $style === 'solid' ? Heroicon::FaceSmile : Heroicon::OutlinedFaceSmile;
+        $bladeIcon = self::bladeIconName($fallback, $style);
+        $label = __('filament-rich-editor-heroicons::rich-editor-heroicons.style_'.$style);
+
+        $svg = Blade::render('<x-filament::icon :icon="$icon" style="width:1.25rem;height:1.25rem;display:inline-block;vertical-align:middle;flex-shrink:0" />', [
+            'icon' => $bladeIcon,
+        ]);
+
+        return '<span style="display:flex;align-items:center;gap:0.5rem">'.$svg.'<span>'.$label.'</span></span>';
+    }
+
+    public function renderSizeLabel(string $value, ?string $iconSlug = null, string $style = 'outline'): string
     {
         $px = $this->sizes[$value] ?? 24;
 
-        $heroicon = $iconSlug ? Heroicon::tryFrom('o-'.$iconSlug) : null;
-        $filamentIcon = ($heroicon ?? Heroicon::OutlinedFaceSmile)->getIconForSize(IconSize::Medium);
+        $heroicon = $iconSlug ? self::resolveHeroicon($iconSlug, $style) : null;
+        $fallback = $style === 'solid' ? Heroicon::FaceSmile : Heroicon::OutlinedFaceSmile;
+        $filamentIcon = self::bladeIconName($heroicon ?? $fallback, $style);
 
         return Blade::render('<x-filament::icon :icon="$icon" style="width:'.$px.'px;height:'.$px.'px;display:block" />', [
             'icon' => $filamentIcon,
         ]);
     }
 
-    private function renderIconLabel(string $slug, Heroicon $icon): string
+    private function renderIconLabel(string $slug, Heroicon $icon, string $style = 'outline'): string
     {
+        $bladeIcon = self::bladeIconName($icon, $style);
+
         $svg = Blade::render('<x-filament::icon :icon="$icon" style="width:1.25rem;height:1.25rem;display:inline-block;vertical-align:middle;flex-shrink:0" />', [
-            'icon' => $icon->getIconForSize(IconSize::Small),
+            'icon' => $bladeIcon,
         ]);
 
         return '<span style="display:flex;align-items:center;gap:0.5rem">'.$svg.'<span>'.$slug.'</span></span>';
