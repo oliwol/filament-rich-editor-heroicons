@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => '颜色',
+    'aria_label_label' => '无障碍标签',
+    'aria_label_placeholder' => '可选 — 装饰性图标可留空',
+    'aria_label_helper' => '向屏幕阅读器描述图标。如果图标纯属装饰，请留空。',
 ];

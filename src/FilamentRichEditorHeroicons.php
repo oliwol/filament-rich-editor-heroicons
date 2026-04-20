@@ -11,6 +11,7 @@ use Filament\Forms\Components\RichEditor\EditorCommand;
 use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Forms\Components\RichEditor\RichEditorTool;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\FusedGroup;
 use Filament\Support\Enums\IconSize;
@@ -136,7 +137,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
             RichEditorTool::make('addHeroicon')
                 ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.action_label'))
                 ->action(
-                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.icon, align: $getEditor().getAttributes(\'heroicon\')?.align, size: $getEditor().getAttributes(\'heroicon\')?.size, style: $getEditor().getAttributes(\'heroicon\')?.style, color: $getEditor().getAttributes(\'heroicon\')?.color }',
+                    arguments: '{ icon: $getEditor().getAttributes(\'heroicon\')?.icon, align: $getEditor().getAttributes(\'heroicon\')?.align, size: $getEditor().getAttributes(\'heroicon\')?.size, style: $getEditor().getAttributes(\'heroicon\')?.style, color: $getEditor().getAttributes(\'heroicon\')?.color, ariaLabel: $getEditor().getAttributes(\'heroicon\')?.ariaLabel }',
                 )
                 ->icon(Heroicon::OutlinedFaceSmile),
         ];
@@ -159,6 +160,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     'align' => $arguments['align'] ?? 'inline',
                     'size' => $arguments['size'] ?? $this->defaultSize,
                     'color' => $arguments['color'] ?? '#000000',
+                    'ariaLabel' => $arguments['ariaLabel'] ?? null,
                 ])
                 ->schema([
                     FusedGroup::make([
@@ -232,6 +234,11 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     ColorPicker::make('color')
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.color_label'))
                         ->default('#000000'),
+                    TextInput::make('ariaLabel')
+                        ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_label'))
+                        ->placeholder(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_placeholder'))
+                        ->helperText(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_helper'))
+                        ->maxLength(255),
                 ])
                 ->action(function (array $arguments, array $data, RichEditor $component): void {
                     $iconName = $data['icon'];
@@ -248,8 +255,12 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     $color = $data['color'] ?? '#000000';
                     $colorStyle = filled($color) ? 'color:'.$color.';' : '';
 
+                    $ariaLabel = $data['ariaLabel'] ?? null;
+                    $ariaAttrs = FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes($ariaLabel);
+
                     $bladeIcon = self::bladeIconName($icon, $style);
-                    $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'" style="'.$colorStyle.'width:'.$px.'px;height:'.$px.'px;vertical-align:middle" />');
+                    $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'"'.$ariaAttrs.' style="'.$colorStyle.'width:'.$px.'px;height:'.$px.'px;vertical-align:middle" />');
+                    $svg = FilamentRichEditorHeroiconsTipTapExtension::applyAriaAttributes($svg, $ariaLabel);
 
                     $component->runCommands(
                         commands: [
@@ -265,6 +276,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                                             'size' => $size,
                                             'style' => $style,
                                             'color' => $color,
+                                            'ariaLabel' => $ariaLabel,
                                         ],
                                     ],
                                 ],

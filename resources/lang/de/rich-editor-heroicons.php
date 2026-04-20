@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'Farbe',
+    'aria_label_label' => 'Barrierefreiheits-Label',
+    'aria_label_placeholder' => 'Optional — für dekorative Icons leer lassen',
+    'aria_label_helper' => 'Beschreibt das Icon für Screenreader. Leer lassen, wenn das Icon rein dekorativ ist.',
 ];

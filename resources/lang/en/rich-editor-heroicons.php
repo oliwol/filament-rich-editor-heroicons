@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'Color',
+    'aria_label_label' => 'Accessibility label',
+    'aria_label_placeholder' => 'Optional — leave empty for decorative icons',
+    'aria_label_helper' => 'Describes the icon to screen readers. Leave empty if the icon is purely decorative.',
 ];

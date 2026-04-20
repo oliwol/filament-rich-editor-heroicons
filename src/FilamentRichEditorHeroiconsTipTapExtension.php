@@ -34,6 +34,22 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
         return self::$sizeMap[$size] ?? 24;
     }
 
+    public static function ariaAttributes(?string $ariaLabel): string
+    {
+        return filled($ariaLabel)
+            ? ' role="img" aria-label="'.e($ariaLabel).'"'
+            : ' aria-hidden="true"';
+    }
+
+    public static function applyAriaAttributes(string $svg, ?string $ariaLabel): string
+    {
+        if (filled($ariaLabel)) {
+            return str_replace(' aria-hidden="true"', '', $svg);
+        }
+
+        return $svg;
+    }
+
     public function addAttributes(): array
     {
         return [
@@ -42,6 +58,7 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
             'size' => ['default' => 'md'],
             'style' => ['default' => 'outline'],
             'color' => ['default' => '#000000'],
+            'ariaLabel' => ['default' => null],
         ];
     }
 
@@ -61,8 +78,12 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
         $color = $node->attrs->color ?? '#000000';
         $colorStyle = $color !== '' ? 'color:'.$color.';' : '';
 
+        $ariaLabel = $node->attrs->ariaLabel ?? null;
+        $ariaAttrs = self::ariaAttributes($ariaLabel);
+
         $bladeIcon = FilamentRichEditorHeroicons::bladeIconName($icon, $style);
-        $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'" style="'.$colorStyle.'width:'.$px.'px;height:'.$px.'px;display:inline-block;vertical-align:middle" />');
+        $svg = Blade::render('<x-filament::icon icon="'.$bladeIcon.'"'.$ariaAttrs.' style="'.$colorStyle.'width:'.$px.'px;height:'.$px.'px;display:inline-block;vertical-align:middle" />');
+        $svg = self::applyAriaAttributes($svg, $ariaLabel);
 
         $alignmentStyle = self::alignmentStyle($align);
 

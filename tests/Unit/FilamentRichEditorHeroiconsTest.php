@@ -1129,5 +1129,148 @@ it('loads translations', function (): void {
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.style_mini'))
         ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.style_mini')
         ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.color_label'))
-        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.color_label');
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.color_label')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_label'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_label')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_placeholder'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_placeholder')
+        ->and(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_helper'))
+        ->not->toBe('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_helper');
 });
+
+it('tiptap extension defines ariaLabel attribute', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+    $attributes = $extension->addAttributes();
+
+    expect($attributes)
+        ->toHaveKey('ariaLabel')
+        ->and($attributes['ariaLabel']['default'])
+        ->toBeNull();
+});
+
+it('ariaAttributes returns aria-hidden for decorative icons', function (): void {
+    expect(FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes(null))
+        ->toBe(' aria-hidden="true"')
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes(''))
+        ->toBe(' aria-hidden="true"');
+});
+
+it('ariaAttributes returns role and aria-label for labeled icons', function (): void {
+    expect(FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes('Open menu'))
+        ->toBe(' role="img" aria-label="Open menu"');
+});
+
+it('ariaAttributes escapes user-supplied labels', function (): void {
+    expect(FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes('Evil "quote"'))
+        ->toContain('aria-label="Evil &quot;quote&quot;"')
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::ariaAttributes('<script>'))
+        ->toContain('aria-label="&lt;script&gt;"');
+});
+
+it('applyAriaAttributes strips aria-hidden when label is set', function (): void {
+    $svg = '<svg role="img" aria-label="Test" class="x" aria-hidden="true" data-slot="icon"></svg>';
+
+    expect(FilamentRichEditorHeroiconsTipTapExtension::applyAriaAttributes($svg, 'Test'))
+        ->toBe('<svg role="img" aria-label="Test" class="x" data-slot="icon"></svg>');
+});
+
+it('applyAriaAttributes preserves svg unchanged for decorative icons', function (): void {
+    $svg = '<svg aria-hidden="true" class="x"></svg>';
+
+    expect(FilamentRichEditorHeroiconsTipTapExtension::applyAriaAttributes($svg, null))
+        ->toBe($svg)
+        ->and(FilamentRichEditorHeroiconsTipTapExtension::applyAriaAttributes($svg, ''))
+        ->toBe($svg);
+});
+
+it('tiptap extension renders decorative icon with aria-hidden', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('aria-hidden="true"')
+        ->not->toContain('aria-label')
+        ->not->toContain('role="img"');
+});
+
+it('tiptap extension renders labeled icon with aria-label and role', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->ariaLabel = 'Academic achievements';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->toContain('role="img"')
+        ->toContain('aria-label="Academic achievements"')
+        ->not->toContain('aria-hidden');
+});
+
+it('action stores ariaLabel in command attrs and renders aria-label in svg',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['ariaLabel'] === 'Graduation cap'
+                    && str_contains((string) $attrs['svg'], 'role="img"')
+                    && str_contains((string) $attrs['svg'], 'aria-label="Graduation cap"')
+                    && ! str_contains((string) $attrs['svg'], 'aria-hidden');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap', 'ariaLabel' => 'Graduation cap'],
+            $component,
+        );
+    });
+
+it('action marks decorative icons with aria-hidden when ariaLabel is missing',
+    /**
+     * @throws ReflectionException
+     */
+    function (): void {
+        $actions = FilamentRichEditorHeroicons::make()->getEditorActions();
+        $action = $actions[0];
+
+        $reflection = new ReflectionClass($action);
+        $property = $reflection->getProperty('action');
+        $closure = $property->getValue($action);
+
+        $component = Mockery::mock(Filament\Forms\Components\RichEditor::class);
+        $component->shouldReceive('runCommands')
+            ->once()
+            ->withArgs(function (array $commands): bool {
+                $attrs = $commands[0]->arguments[0]['attrs'];
+
+                return $attrs['ariaLabel'] === null
+                    && str_contains((string) $attrs['svg'], 'aria-hidden="true"')
+                    && ! str_contains((string) $attrs['svg'], 'aria-label');
+            });
+
+        $closure(
+            ['editorSelection' => ['start' => 0, 'end' => 0]],
+            ['icon' => 'academic-cap'],
+            $component,
+        );
+    });

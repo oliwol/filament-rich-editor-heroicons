@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'Renk',
+    'aria_label_label' => 'Erişilebilirlik etiketi',
+    'aria_label_placeholder' => 'İsteğe bağlı — dekoratif simgeler için boş bırakın',
+    'aria_label_helper' => 'Simgeyi ekran okuyuculara tanımlar. Simge yalnızca dekoratifse boş bırakın.',
 ];

@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'اللون',
+    'aria_label_label' => 'تسمية إمكانية الوصول',
+    'aria_label_placeholder' => 'اختياري — اتركه فارغًا للأيقونات الزخرفية',
+    'aria_label_helper' => 'يصف الأيقونة لقارئات الشاشة. اتركه فارغًا إذا كانت الأيقونة زخرفية فقط.',
 ];

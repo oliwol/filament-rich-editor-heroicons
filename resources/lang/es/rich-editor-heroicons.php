@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'Color',
+    'aria_label_label' => 'Etiqueta de accesibilidad',
+    'aria_label_placeholder' => 'Opcional — dejar vacío para iconos decorativos',
+    'aria_label_helper' => 'Describe el icono para lectores de pantalla. Déjalo vacío si el icono es puramente decorativo.',
 ];

@@ -121,6 +121,13 @@ export default Node.create({
                     'data-color': attrs.color || '#000000',
                 }),
             },
+            ariaLabel: {
+                default: null,
+                parseHTML: el => el.getAttribute('data-aria-label'),
+                renderHTML: attrs => attrs.ariaLabel
+                    ? { 'data-aria-label': attrs.ariaLabel }
+                    : {},
+            },
         }
     },
 

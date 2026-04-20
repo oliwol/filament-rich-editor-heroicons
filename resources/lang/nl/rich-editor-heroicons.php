@@ -24,4 +24,7 @@ return [
     'size_lg' => 'L (:pxpx)',
     'size_xl' => 'XL (:pxpx)',
     'color_label' => 'Kleur',
+    'aria_label_label' => 'Toegankelijkheidslabel',
+    'aria_label_placeholder' => 'Optioneel — leeg laten voor decoratieve iconen',
+    'aria_label_helper' => 'Beschrijft het icoon voor schermlezers. Laat leeg als het icoon puur decoratief is.',
 ];
