@@ -110,6 +110,15 @@ FilamentRichEditorHeroicons::make()
 
 The picker modal includes a color picker to set the icon color. The default color is `#000000` (black).
 
+### Accessibility
+
+The picker modal includes an optional **Accessibility label** field. Screen readers use this label to describe the icon.
+
+- **Leave empty** for decorative icons → the SVG gets `aria-hidden="true"` (invisible to screen readers)
+- **Fill in a label** (e.g. `"warning"`) → the SVG gets `role="img"` and `aria-label="warning"`
+
+This follows the [WAI-ARIA authoring practices](https://www.w3.org/WAI/tutorials/images/decorative/) for decorative vs. informative images.
+
 ### Editing Inserted Icons
 
 Click on any inserted icon in the editor to re-open the picker modal pre-filled with the current settings. Changes update the icon in place.
@@ -119,7 +128,7 @@ All settings are persisted in the editor content and applied consistently when r
 ## ⚙️ How it works
 
 1. Clicking the toolbar button opens a modal with a searchable dropdown of [Heroicons](https://heroicons.com/) with SVG previews.
-2. Select a style (outline/solid/mini), alignment, size, and color.
+2. Select a style (outline/solid/mini), alignment, size, color, and an optional accessibility label.
 3. The icon is rendered as an inline SVG element and inserted into the editor content.
 4. Clicking an existing icon re-opens the modal for editing.
 5. All properties are stored as data attributes and applied on render.
