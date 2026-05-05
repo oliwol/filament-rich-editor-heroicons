@@ -165,3 +165,12 @@ it('toHtml contains svg when HtmlSanitizerConfig is separately bound (Filament v
 
     expect($html)->toContain('<svg');
 });
+
+it('toHtml contains svg when HtmlSanitizerConfig is not separately bound (Filament v5.1.x compat)', function (): void {
+    // Remove the binding if present (e.g. Filament v5.6+) to force the filamentBaseConfig() fallback
+    $this->app->offsetUnset(HtmlSanitizerConfig::class);
+
+    $html = renderer(heroiconDoc([]))->toHtml();
+
+    expect($html)->toContain('<svg');
+});
