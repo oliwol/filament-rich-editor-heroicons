@@ -19,7 +19,7 @@ function heroiconDoc(array $attrs): string
                     'align' => 'inline',
                     'size' => 'md',
                     'style' => 'outline',
-                    'color' => '#000000',
+                    'color' => null,
                     'svg' => null,
                     'ariaLabel' => null,
                 ], $attrs),

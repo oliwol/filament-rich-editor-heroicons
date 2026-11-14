@@ -57,7 +57,7 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
             'align' => ['default' => 'inline'],
             'size' => ['default' => 'md'],
             'style' => ['default' => 'outline'],
-            'color' => ['default' => '#000000'],
+            'color' => ['default' => null],
             'ariaLabel' => ['default' => null],
         ];
     }
@@ -75,8 +75,8 @@ final class FilamentRichEditorHeroiconsTipTapExtension extends Node
         $size = $node->attrs->size ?? 'md';
         $px = self::sizePixels($size);
 
-        $color = $node->attrs->color ?? '#000000';
-        $colorStyle = $color !== '' ? 'color:'.$color.';' : '';
+        $color = $node->attrs->color ?? null;
+        $colorStyle = filled($color) ? 'color:'.$color.';' : '';
 
         $ariaLabel = $node->attrs->ariaLabel ?? null;
         $ariaAttrs = self::ariaAttributes($ariaLabel);
