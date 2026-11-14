@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Changed
+
+- Icons without a chosen color no longer get an inline black color; they inherit the color of the surrounding text, which keeps them visible in dark mode
+
 ## [1.0.0] - 2026-03-25
 
 ### Added

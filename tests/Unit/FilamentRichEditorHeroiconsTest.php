@@ -624,7 +624,7 @@ it('action inserts heroicon with color',
         );
     });
 
-it('action inserts heroicon with default color #000000 when no color specified',
+it('action inserts heroicon without a color when none is specified',
     /**
      * @throws ReflectionException
      */
@@ -642,8 +642,8 @@ it('action inserts heroicon with default color #000000 when no color specified',
             ->withArgs(function (array $commands): bool {
                 $attrs = $commands[0]->arguments[0]['attrs'];
 
-                return $attrs['color'] === '#000000'
-                    && str_contains((string) $attrs['svg'], 'color:#000000');
+                return $attrs['color'] === null
+                    && ! str_contains((string) $attrs['svg'], 'color:');
             });
 
         $closure(
@@ -660,7 +660,7 @@ it('tiptap extension defines color attribute', function (): void {
     expect($attributes)
         ->toHaveKey('color')
         ->and($attributes['color']['default'])
-        ->toBe('#000000');
+        ->toBeNull();
 });
 
 it('tiptap extension renders with color', function (): void {
@@ -677,7 +677,7 @@ it('tiptap extension renders with color', function (): void {
         ->toContain('color:#ef4444');
 });
 
-it('tiptap extension renders with default color #000000', function (): void {
+it('tiptap extension renders without a color so the icon inherits the text color', function (): void {
     $extension = new FilamentRichEditorHeroiconsTipTapExtension;
 
     $node = new stdClass;
@@ -687,7 +687,7 @@ it('tiptap extension renders with default color #000000', function (): void {
     $result = $extension->renderHTML($node);
 
     expect($result['content'])
-        ->toContain('color:#000000');
+        ->not->toContain('color:');
 });
 
 it('tiptap extension renders solid icon', function (): void {
@@ -1274,3 +1274,17 @@ it('action marks decorative icons with aria-hidden when ariaLabel is missing',
             $component,
         );
     });
+
+it('tiptap extension renders without a color when the stored color is empty', function (): void {
+    $extension = new FilamentRichEditorHeroiconsTipTapExtension;
+
+    $node = new stdClass;
+    $node->attrs = new stdClass;
+    $node->attrs->icon = 'academic-cap';
+    $node->attrs->color = '';
+
+    $result = $extension->renderHTML($node);
+
+    expect($result['content'])
+        ->not->toContain('color:');
+});

@@ -108,7 +108,7 @@ FilamentRichEditorHeroicons::make()
 
 ### Color
 
-The picker modal includes a color picker to set the icon color. The default color is `#000000` (black).
+The picker modal includes a color picker to set the icon color. Without a color the icon inherits the color of the surrounding text, so it adapts to dark mode and any theme.
 
 ### Accessibility
 

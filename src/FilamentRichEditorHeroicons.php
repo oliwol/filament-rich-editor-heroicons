@@ -159,7 +159,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     'icon' => $arguments['icon'] ?? null,
                     'align' => $arguments['align'] ?? 'inline',
                     'size' => $arguments['size'] ?? $this->defaultSize,
-                    'color' => $arguments['color'] ?? '#000000',
+                    'color' => $arguments['color'] ?? null,
                     'ariaLabel' => $arguments['ariaLabel'] ?? null,
                 ])
                 ->schema([
@@ -232,8 +232,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                         ->inline()
                         ->grouped(),
                     ColorPicker::make('color')
-                        ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.color_label'))
-                        ->default('#000000'),
+                        ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.color_label')),
                     TextInput::make('ariaLabel')
                         ->label(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_label'))
                         ->placeholder(__('filament-rich-editor-heroicons::rich-editor-heroicons.aria_label_placeholder'))
@@ -252,7 +251,7 @@ final class FilamentRichEditorHeroicons implements RichContentPlugin
                     $size = $data['size'] ?? $this->defaultSize;
                     $px = $this->sizes[$size] ?? 24;
 
-                    $color = $data['color'] ?? '#000000';
+                    $color = $data['color'] ?? null;
                     $colorStyle = filled($color) ? 'color:'.$color.';' : '';
 
                     $ariaLabel = $data['ariaLabel'] ?? null;

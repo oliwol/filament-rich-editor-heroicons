@@ -115,11 +115,11 @@ export default Node.create({
                 }),
             },
             color: {
-                default: '#000000',
-                parseHTML: el => el.getAttribute('data-color') || '#000000',
-                renderHTML: attrs => ({
-                    'data-color': attrs.color || '#000000',
-                }),
+                default: null,
+                parseHTML: el => el.getAttribute('data-color') || null,
+                renderHTML: attrs => attrs.color
+                    ? { 'data-color': attrs.color }
+                    : {},
             },
             ariaLabel: {
                 default: null,
@@ -148,7 +148,7 @@ export default Node.create({
             stripFilamentClasses(span);
             applyAlignment(span, node.attrs.align || 'inline');
             applySize(span, node.attrs.size || 'md');
-            applyColor(span, node.attrs.color || '#000000');
+            applyColor(span, node.attrs.color);
 
             if (editor.isEditable) {
                 span.style.cursor = 'pointer';
